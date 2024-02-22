@@ -31,6 +31,7 @@ class IssueWithMetrics:
         time_to_close=None,
         time_to_answer=None,
         labels_metrics=None,
+        pull_request_size=None,
     ):
         self.title = title
         self.html_url = html_url
@@ -39,3 +40,4 @@ class IssueWithMetrics:
         self.time_to_close = time_to_close
         self.time_to_answer = time_to_answer
         self.label_metrics = labels_metrics
+        self.pull_request_size = pull_request_size

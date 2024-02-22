@@ -220,7 +220,7 @@ class TestMain(unittest.TestCase):
         # Call main and check that it writes 'No issues found'
         issue_metrics.main()
         mock_write_to_markdown.assert_called_once_with(
-            None, None, None, None, None, None, None
+            None, None, None, None, None, None, None, None
         )
 
 
@@ -315,6 +315,12 @@ class TestGetPerIssueMetrics(unittest.TestCase):
         self.assertEqual(
             result_issues_with_metrics[1].time_to_close,
             expected_issues_with_metrics[1].time_to_close,
+        )
+        self.assertEqual(
+            result_issues_with_metrics[0].pull_request_size, None
+        )
+        self.assertEqual(
+            result_issues_with_metrics[1].pull_request_size, None
         )
 
 

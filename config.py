@@ -28,10 +28,11 @@ class EnvVars:
         hide_time_to_close (str): If set, the time to close metric is hidden in the output
         hide_time_to_answer (str): If set, the time to answer discussions is hidden in the output
         hide_label_metrics (str): If set, the label metrics are hidden in the output
+        hide_pull_request_size (str): If set, the pull request size metrics are hidden in the output
     """
     def __init__(self, search_query: str, gh_token: str, labels_to_measure: List[str], ignore_user: List[str],
                  github_server_url: str, hide_author: str, hide_time_to_first_response: str,
-                 hide_time_to_close: str, hide_time_to_answer: str, hide_label_metrics: str):
+                 hide_time_to_close: str, hide_time_to_answer: str, hide_label_metrics: str, hide_pull_request_size: str):
         self.search_query = search_query
         self.gh_token = gh_token
         self.labels_to_measure = labels_to_measure
@@ -42,6 +43,7 @@ class EnvVars:
         self.hide_time_to_close = hide_time_to_close
         self.hide_time_to_answer = hide_time_to_answer
         self.hide_label_metrics = hide_label_metrics
+        self.hide_pull_request_size = hide_pull_request_size
 
 
 def get_env_vars() -> EnvVars:
@@ -78,6 +80,7 @@ def get_env_vars() -> EnvVars:
     hide_time_to_close = os.getenv("HIDE_TIME_TO_CLOSE")
     hide_time_to_answer = os.getenv("HIDE_TIME_TO_ANSWER")
     hide_label_metrics = os.getenv("HIDE_LABEL_METRICS")
+    hide_pull_request_size = os.getenv("HIDE_PULL_REQUEST_SIZE")
 
     return EnvVars(
         search_query,
@@ -89,5 +92,6 @@ def get_env_vars() -> EnvVars:
         hide_time_to_first_response,
         hide_time_to_close,
         hide_time_to_answer,
-        hide_label_metrics
+        hide_label_metrics,
+        hide_pull_request_size
     )

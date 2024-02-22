@@ -41,6 +41,7 @@ from time_to_first_response import (
     get_stats_time_to_first_response,
     measure_time_to_first_response,
 )
+from pull_request_size import get_pull_request_size, get_stats_pull_request_size
 from config import get_env_vars
 
 
@@ -148,6 +149,7 @@ def get_per_issue_metrics(
                 None,
                 None,
                 None,
+                None,
             )
             issue_with_metrics.time_to_first_response = measure_time_to_first_response(
                 None, issue, ignore_users
@@ -167,17 +169,21 @@ def get_per_issue_metrics(
                 None,
                 None,
                 None,
+                None,
             )
 
             # Check if issue is actually a pull request
             pull_request, ready_for_review_at = None, None
+            pull_request_size = None
             if issue.issue.pull_request_urls:
                 pull_request = issue.issue.pull_request()
                 ready_for_review_at = get_time_to_ready_for_review(issue, pull_request)
+                pull_request_size = get_pull_request_size(pull_request)
 
             issue_with_metrics.time_to_first_response = measure_time_to_first_response(
                 issue, None, pull_request, ready_for_review_at, ignore_users
             )
+            issue_with_metrics.pull_request_size = pull_request_size
             if labels:
                 issue_with_metrics.label_metrics = get_label_metrics(issue, labels)
             if issue.state == "closed":  # type: ignore
@@ -267,13 +273,13 @@ def main():
         issues = get_discussions(token, search_query)
         if len(issues) <= 0:
             print("No discussions found")
-            write_to_markdown(None, None, None, None, None, None, None)
+            write_to_markdown(None, None, None, None, None, None, None, None)
             return
     else:
         issues = search_issues(search_query, github_connection)
         if len(issues) <= 0:
             print("No issues found")
-            write_to_markdown(None, None, None, None, None, None, None)
+            write_to_markdown(None, None, None, None, None, None, None, None)
             return
 
     # Get all the metrics
@@ -297,6 +303,8 @@ def main():
     # where the key is the label and the value is the average time
     stats_time_in_labels = get_stats_time_in_labels(issues_with_metrics, labels)
 
+    stats_pull_request_size = get_stats_pull_request_size(issues_with_metrics)
+
     # Write the results to json and a markdown file
     write_to_json(
         issues_with_metrics,
@@ -304,6 +312,7 @@ def main():
         stats_time_to_close,
         stats_time_to_answer,
         stats_time_in_labels,
+        stats_pull_request_size,
         num_issues_open,
         num_issues_closed,
         search_query,
@@ -314,6 +323,7 @@ def main():
         stats_time_to_close,
         stats_time_to_answer,
         stats_time_in_labels,
+        stats_pull_request_size,
         num_issues_open,
         num_issues_closed,
         labels,

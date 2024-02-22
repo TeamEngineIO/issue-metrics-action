@@ -63,6 +63,10 @@ def get_non_hidden_columns(labels) -> List[str]:
     if not hide_time_to_answer:
         columns.append("Time to answer")
 
+    hide_pull_request_size = env_vars.hide_pull_request_size
+    if not hide_pull_request_size:
+        columns.append("Pull request size")
+
     hide_label_metrics = env_vars.hide_label_metrics
     if not hide_label_metrics and labels:
         for label in labels:
@@ -77,6 +81,7 @@ def write_to_markdown(
     average_time_to_close: Union[dict[str, timedelta], None],
     average_time_to_answer: Union[dict[str, timedelta], None],
     average_time_in_labels: Union[dict, None],
+    average_pull_request_size: Union[dict[str, int], None],
     num_issues_opened: Union[int, None],
     num_issues_closed: Union[int, None],
     labels=None,
@@ -92,6 +97,7 @@ def write_to_markdown(
         average_time_to_close (datetime.timedelta): The average time to close for the issues.
         average_time_to_answer (datetime.timedelta): The average time to answer the discussions.
         average_time_in_labels (dict): A dictionary containing the average time spent in each label.
+        average_pull_request_size (int): The average pull request size for the issues. 
         file (file object, optional): The file object to write to. If not provided,
             a file named "issue_metrics.md" will be created.
         num_issues_opened (int): The Number of items that remain opened.
@@ -125,6 +131,7 @@ def write_to_markdown(
             average_time_to_close,
             average_time_to_answer,
             average_time_in_labels,
+            average_pull_request_size,
             num_issues_opened,
             num_issues_closed,
             labels,
@@ -162,6 +169,8 @@ def write_to_markdown(
                 file.write(f" {issue.time_to_close} |")
             if "Time to answer" in columns:
                 file.write(f" {issue.time_to_answer} |")
+            if "Pull request size" in columns:
+                file.write(f" {issue.pull_request_size} |")
             if labels and issue.label_metrics:
                 for label in labels:
                     if f"Time spent in {label}" in columns:
@@ -182,6 +191,7 @@ def write_overall_metrics_tables(
     stats_time_to_close,
     stats_time_to_answer,
     stats_time_in_labels,
+    stats_pull_request_size,
     num_issues_opened,
     num_issues_closed,
     labels,
@@ -228,6 +238,16 @@ def write_overall_metrics_tables(
                 )
             else:
                 file.write("| Time to answer | None | None | None |\n")
+        if "Pull request size" in columns:
+            if stats_pull_request_size is not None:
+                file.write(
+                    f"| Pull request size "
+                    f"| {stats_pull_request_size['avg']} "
+                    f"| {stats_pull_request_size['med']} "
+                    f"| {stats_pull_request_size['90p']} |\n"
+                )
+            else:
+                file.write("| Pull request size | None | None | None |\n")
         if labels and stats_time_in_labels:
             for label in labels:
                 if (

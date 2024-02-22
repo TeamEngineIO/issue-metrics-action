@@ -29,6 +29,7 @@ def write_to_json(
     stats_time_to_close: Union[dict[str, timedelta], None],
     stats_time_to_answer: Union[dict[str, timedelta], None],
     stats_time_in_labels: Union[dict[str, dict[str, timedelta]], None],
+    stats_pull_request_size: Union[dict[str, int], None],
     num_issues_opened: Union[int, None],
     num_issues_closed: Union[int, None],
     search_query: str,
@@ -103,6 +104,15 @@ def write_to_json(
         med_time_to_answer = stats_time_to_answer['med']
         p90_time_to_answer = stats_time_to_answer['90p']
 
+    # pull request size
+    average_pull_request_size = None
+    med_pull_request_size = None
+    p90_pull_request_size = None
+    if stats_pull_request_size is not None:
+        average_pull_request_size = stats_pull_request_size['avg']
+        med_pull_request_size = stats_pull_request_size['med']
+        p90_pull_request_size = stats_pull_request_size['90p']
+
     average_time_in_labels = {}
     med_time_in_labels = {}
     p90_time_in_labels = {}
@@ -119,14 +129,17 @@ def write_to_json(
         "average_time_to_close": str(average_time_to_close),
         "average_time_to_answer": str(average_time_to_answer),
         "average_time_in_labels": average_time_in_labels,
+        "average_pull_request_size": average_pull_request_size,
         "median_time_to_first_response": str(med_time_to_first_response),
         "median_time_to_close": str(med_time_to_close),
         "median_time_to_answer": str(med_time_to_answer),
         "median_time_in_labels": med_time_in_labels,
+        "median_pull_request_size": med_pull_request_size,
         "90_percentile_time_to_first_response": str(p90_time_to_first_response),
         "90_percentile_time_to_close": str(p90_time_to_close),
         "90_percentile_time_to_answer": str(p90_time_to_answer),
         "90_percentile_time_in_labels": p90_time_in_labels,
+        "90_percentile_pull_request_size": p90_pull_request_size,
         "num_items_opened": num_issues_opened,
         "num_items_closed": num_issues_closed,
         "total_item_count": len(issues_with_metrics),
@@ -148,6 +161,7 @@ def write_to_json(
                 "time_to_close": str(issue.time_to_close),
                 "time_to_answer": str(issue.time_to_answer),
                 "label_metrics": formatted_label_metrics,
+                "pull_request_size": issue.pull_request_size,
             }
         )
 
