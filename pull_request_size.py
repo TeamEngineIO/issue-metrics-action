@@ -1,7 +1,8 @@
 """A module for getting the size of a pull request.
 
 This module provides functions for getting the approximate pull request size 
-as (additions + deletions) * 0.5.
+as (additions + deletions) * 0.5. 
+If additions or deletions is 0, the returned size is the other count.
 
 Functions:
     get_pull_request_size(
@@ -74,7 +75,13 @@ def get_pull_request_size(
 
     additions = pull_request.additions_count
     deletions = pull_request.deletions_count
+    size = 0
 
-    size = (additions + deletions) * 0.5
+    if additions == 0:
+        size = deletions
+    elif deletions == 0:
+        size = additions
+    else:
+        size = (additions + deletions) * 0.5
 
     return size

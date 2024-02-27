@@ -1,5 +1,83 @@
 # Issue Metrics Action
 
+This is a fork off of the Github Action [issue-metrics](https://github.com/github/issue-metrics)
+
+Things changed:
+
+1. Pull Request Size Metric - Added metric to calculate pull request size for each pull request, as well as generate the average size for the top level report
+
+2. `action.yml` - This action will run off of the `Dockerfile` in this repository, rather than the published image for the original action
+
+## Updated documentation based on changes:
+
+### Available Metrics
+
+| Metric                            | Description                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| Time to First Response            | The duration from creation to the initial comment or review.\*                             |
+| Time to Close                     | The period from creation to closure.\*                                                     |
+| Time to Answer (Discussions Only) | The time from creation to an answer.                                                       |
+| Time in Label                     | The duration from label application to removal, requires `LABELS_TO_MEASURE` env variable. |
+| Pull Request Size (PRs Only)      | An approximated size of pull requests.                                                     |
+
+### Configuration
+
+Below are the allowed configuration options:
+
+| field                         | required | default | description                                                                                                                                                                                     |
+| ----------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GH_TOKEN`                    | True     |         | The GitHub Token used to scan the repository. Must have read access to all repository you are interested in scanning.                                                                           |
+| `SEARCH_QUERY`                | True     |         | The query by which you can filter issues/prs which must contain a `repo:`, `org:`, `owner:`, or a `user:` entry. For discussions, include `type:discussions` in the query.                      |
+| `LABELS_TO_MEASURE`           | False    |         | A comma separated list of labels to measure how much time the label is applied. If not provided, no labels durations will be measured. Not compatible with discussions at this time.            |
+| `HIDE_AUTHOR`                 | False    |         | If set to any value, the author will not be displayed in the generated markdown file.                                                                                                           |
+| `HIDE_TIME_TO_FIRST_RESPONSE` | False    |         | If set to any value, the time to first response will not be displayed in the generated markdown file.                                                                                           |
+| `HIDE_TIME_TO_CLOSE`          | False    |         | If set to any value, the time to close will not be displayed in the generated markdown file.                                                                                                    |
+| `HIDE_TIME_TO_ANSWER`         | False    |         | If set to any value, the time to answer a discussion will not be displayed in the generated markdown file.                                                                                      |
+| `HIDE_LABEL_METRICS`          | False    |         | If set to any value, the time in label metrics will not be displayed in the generated markdown file.                                                                                            |
+| `HIDE_PULL_REQUEST_SIZE`      | False    |         | If set to any value, the pull request size metrics will not be displayed in the generated markdown file.                                                                                        |
+| `IGNORE_USERS`                | False    |         | A comma separated list of users to ignore when calculating metrics. (ie. `IGNORE_USERS: 'user1,user2'`). To ignore bots, append `[bot]` to the user (ie. `IGNORE_USERS: 'github-actions[bot]'`) |
+
+## Pull Request Size Metric Details
+
+The pull request size metric calculates an approximate pr size with the following formula: `(number of additions +  number of deletions) * 0.5`
+Looking at various pr size calculations, this is a commonly used formula as it accounts for Github's decision to count a line changed as +1/-1 (1 addition, 1 deletion). The pr size may always be off by a few lines, however, we do account for the case of 0 additions or 0 deletions.
+
+## Development
+
+### Getting Started (Mac)
+
+1. Clone this repository
+2. Install python3, which can be done through Homebrew and should install `pip` as well. Check for python and pip with `python3 --version` and `pip3 --version`.
+3. Install virtualenv `pip3 install virtualenv`
+4. Create a new virtual environment `python3 -m venv .venv`
+5. Activate the virtual environment `source .venv/bin/activate`
+6. Install packages with pip in the virtual environment `pip install -r requirements.txt`
+7. You can now test and run code in the virtual environment. Test files run with `pytest <test file name>` - ex: `pytest test_pull_request_size.py`
+8. When you're done, deactivate the environment with the command `deactivate`
+
+If you use VSCode, you might be prompted to add extensions to properly read python. You can also set the python interpreter by opening the command palette and searching for `Python: Select Interpreter`.
+
+You do not have to set up a `.env` at this time.
+
+### Adding metrics
+
+Try to follow the conventions set by the github/issue-metrics repo when adding new metrics. As much as possible, new methods should be documented the same way as the original methods. A new test file should be added and old tests should be updated where necessary.
+
+Reference documentation:
+This action uses `github3.py` to access github objects, here is their documentation home as well as the pages for the two types use most frequently in this project:
+
+- [github3.py](https://github3.readthedocs.io/en/latest/index.html)
+- [IssueSearchResult](https://github3.readthedocs.io/en/latest/api-reference/search.html#github3.search.IssueSearchResult)
+- [PullRequest](https://github3.readthedocs.io/en/latest/api-reference/pulls.html#github3.pulls.PullRequest)
+
+While adding the pull request size metric, the [Github REST API docs](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#create-a-pull-request) and this [alternate pull request metric project](https://github.com/AlexSim93/pull-request-analytics-action/tree/master) were helpful for getting a better understanding of how to interact with the pull request object.
+
+## Original Documentation
+
+<details>
+
+<summary>Complete Original README:</summary>
+
 [![CodeQL](https://github.com/github/issue-metrics/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/github/issue-metrics/actions/workflows/codeql-analysis.yml) [![Docker Image CI](https://github.com/github/issue-metrics/actions/workflows/docker-image.yml/badge.svg)](https://github.com/github/issue-metrics/actions/workflows/docker-image.yml) [![Python package](https://github.com/github/issue-metrics/actions/workflows/python-package.yml/badge.svg)](https://github.com/github/issue-metrics/actions/workflows/python-package.yml)
 
 This is a GitHub Action that searches for issues/pull requests/discussions in a repository, measures several metrics, and generates a report in form of a GitHub issue.
@@ -10,16 +88,16 @@ Feel free to inquire about its usage by creating an issue in this repository.
 
 ## Available Metrics
 
-| Metric | Description |
-|--------|-------------|
-|Time to First Response | The duration from creation to the initial comment or review.*|
-|Time to Close | The period from creation to closure.*|
-|Time to Answer (Discussions Only) | The time from creation to an answer.|
-|Time in Label | The duration from label application to removal, requires `LABELS_TO_MEASURE` env variable.|
+| Metric                            | Description                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| Time to First Response            | The duration from creation to the initial comment or review.\*                             |
+| Time to Close                     | The period from creation to closure.\*                                                     |
+| Time to Answer (Discussions Only) | The time from creation to an answer.                                                       |
+| Time in Label                     | The duration from label application to removal, requires `LABELS_TO_MEASURE` env variable. |
 
-*For pull requests, these metrics exclude the time the PR was in draft mode.
+\*For pull requests, these metrics exclude the time the PR was in draft mode.
 
-*For issues and pull requests, comments by issue/pull request author's and comments by bots are excluded.
+\*For issues and pull requests, comments by issue/pull request author's and comments by bots are excluded.
 
 To find syntax for search queries, check out the documentation on [searching issues and pull requests](https://docs.github.com/en/issues/tracking-your-work-with-issues/filtering-and-searching-issues-and-pull-requests)
 or [searching discussions](https://docs.github.com/en/search-github/searching-on-github/searching-discussions).
@@ -42,7 +120,7 @@ name: Monthly issue metrics
 on:
   workflow_dispatch:
   schedule:
-    - cron: '3 2 1 * *'
+    - cron: "3 2 1 * *"
 
 permissions:
   issues: write
@@ -53,31 +131,31 @@ jobs:
     name: issue metrics
     runs-on: ubuntu-latest
     steps:
-    - name: Get dates for last month
-      shell: bash
-      run: |
-        # Calculate the first day of the previous month
-        first_day=$(date -d "last month" +%Y-%m-01)
+      - name: Get dates for last month
+        shell: bash
+        run: |
+          # Calculate the first day of the previous month
+          first_day=$(date -d "last month" +%Y-%m-01)
 
-        # Calculate the last day of the previous month
-        last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
+          # Calculate the last day of the previous month
+          last_day=$(date -d "$first_day +1 month -1 day" +%Y-%m-%d)
 
-        #Set an environment variable with the date range
-        echo "$first_day..$last_day"
-        echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
+          #Set an environment variable with the date range
+          echo "$first_day..$last_day"
+          echo "last_month=$first_day..$last_day" >> "$GITHUB_ENV"
 
-    - name: Run issue-metrics tool
-      uses: github/issue-metrics@v2
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SEARCH_QUERY: 'repo:owner/repo is:issue created:${{ env.last_month }} -reason:"not planned"'
+      - name: Run issue-metrics tool
+        uses: github/issue-metrics@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SEARCH_QUERY: 'repo:owner/repo is:issue created:${{ env.last_month }} -reason:"not planned"'
 
-    - name: Create issue
-      uses: peter-evans/create-issue-from-file@v5
-      with:
-        title: Monthly issue metrics report
-        token: ${{ secrets.GITHUB_TOKEN }}
-        content-filepath: ./issue_metrics.md
+      - name: Create issue
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: Monthly issue metrics report
+          token: ${{ secrets.GITHUB_TOKEN }}
+          content-filepath: ./issue_metrics.md
 ```
 
 ## Example use cases
@@ -106,17 +184,17 @@ If you need support using this project or have questions about it, please [open 
 
 Below are the allowed configuration options:
 
-| field                 | required | default | description |
-|-----------------------|----------|---------|-------------|
-| `GH_TOKEN`            | True     |         | The GitHub Token used to scan the repository. Must have read access to all repository you are interested in scanning. |
-| `SEARCH_QUERY`        | True     |         | The query by which you can filter issues/prs which must contain a `repo:`, `org:`, `owner:`, or a `user:` entry. For discussions, include `type:discussions` in the query. |
-| `LABELS_TO_MEASURE`   | False    |         | A comma separated list of labels to measure how much time the label is applied. If not provided, no labels durations will be measured. Not compatible with discussions at this time. |
-| `HIDE_AUTHOR` | False |         | If set to any value, the author will not be displayed in the generated markdown file. |
-| `HIDE_TIME_TO_FIRST_RESPONSE` | False |         | If set to any value, the time to first response will not be displayed in the generated markdown file. |
-| `HIDE_TIME_TO_CLOSE` | False |         | If set to any value, the time to close will not be displayed in the generated markdown file. |
-| `HIDE_TIME_TO_ANSWER` | False |         | If set to any value, the time to answer a discussion will not be displayed in the generated markdown file. |
-| `HIDE_LABEL_METRICS` | False |         | If set to any value, the time in label metrics will not be displayed in the generated markdown file. |
-| `IGNORE_USERS` | False |         | A comma separated list of users to ignore when calculating metrics. (ie. `IGNORE_USERS: 'user1,user2'`). To ignore bots, append `[bot]` to the user (ie. `IGNORE_USERS: 'github-actions[bot]'`)  |
+| field                         | required | default | description                                                                                                                                                                                     |
+| ----------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GH_TOKEN`                    | True     |         | The GitHub Token used to scan the repository. Must have read access to all repository you are interested in scanning.                                                                           |
+| `SEARCH_QUERY`                | True     |         | The query by which you can filter issues/prs which must contain a `repo:`, `org:`, `owner:`, or a `user:` entry. For discussions, include `type:discussions` in the query.                      |
+| `LABELS_TO_MEASURE`           | False    |         | A comma separated list of labels to measure how much time the label is applied. If not provided, no labels durations will be measured. Not compatible with discussions at this time.            |
+| `HIDE_AUTHOR`                 | False    |         | If set to any value, the author will not be displayed in the generated markdown file.                                                                                                           |
+| `HIDE_TIME_TO_FIRST_RESPONSE` | False    |         | If set to any value, the time to first response will not be displayed in the generated markdown file.                                                                                           |
+| `HIDE_TIME_TO_CLOSE`          | False    |         | If set to any value, the time to close will not be displayed in the generated markdown file.                                                                                                    |
+| `HIDE_TIME_TO_ANSWER`         | False    |         | If set to any value, the time to answer a discussion will not be displayed in the generated markdown file.                                                                                      |
+| `HIDE_LABEL_METRICS`          | False    |         | If set to any value, the time in label metrics will not be displayed in the generated markdown file.                                                                                            |
+| `IGNORE_USERS`                | False    |         | A comma separated list of users to ignore when calculating metrics. (ie. `IGNORE_USERS: 'user1,user2'`). To ignore bots, append `[bot]` to the user (ie. `IGNORE_USERS: 'github-actions[bot]'`) |
 
 ## Further Documentation
 
@@ -128,6 +206,7 @@ Below are the allowed configuration options:
 - [Local usage without Docker](./docs/local-usage-without-docker.md)
 
 ## Contributions
+
 We would ❤️ contributions to improve this action. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for how to get involved.
 
 ## License
@@ -137,3 +216,5 @@ We would ❤️ contributions to improve this action. Please see [CONTRIBUTING.m
 ## More OSPO Tools
 
 Looking for more resources for your open source program office (OSPO)? Check out the [`github-ospo`](https://github.com/github/github-ospo) repo for a variety of tools designed to support your needs.
+
+</details>
